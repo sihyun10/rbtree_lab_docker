@@ -90,8 +90,104 @@ void delete_rbtree(rbtree *t)
 
 node_t *rbtree_insert(rbtree *t, const key_t key)
 {
-  // TODO: implement insert
-  return t->root;
+  node_t *x = t->root;
+  node_t *y = t->nil;
+
+  node_t *z = (node_t *)calloc(1, sizeof(node_t));
+  z->key = key;
+  z->color = RBTREE_RED;
+  z->left = t->nil;
+  z->right = t->nil;
+  z->parent = t->nil;
+
+  while (x != t->nil)
+  {
+    y = x;
+    if (key < x->key)
+    {
+      x = x->left;
+    }
+    else
+    {
+      x = x->right;
+    }
+  }
+
+  z->parent = y;
+
+  if (y == t->nil)
+  {
+    t->root = z;
+  }
+  else if (key < y->key)
+  {
+    y->left = z;
+  }
+  else
+  {
+    y->right = z;
+  }
+
+  insert_fixup(t, z);
+  return z;
+}
+
+void insert_fixup(rbtree *t, node_t *z)
+{
+  while (z->parent->color == RBTREE_RED)
+  {
+    if (z->parent == z->parent->parent->left)
+    {
+      node_t *y = z->parent->parent->right;
+
+      // Case 1
+      if (y->color == RBTREE_RED)
+      {
+        z->parent->color = RBTREE_BLACK;
+        y->color = RBTREE_BLACK;
+        z->parent->parent->color = RBTREE_RED;
+        z = z->parent->parent;
+        continue;
+      }
+
+      // Case 2
+      if (z == z->parent->right)
+      {
+        z = z->parent;
+        left_rotate(t, z);
+      }
+
+      // Case 3
+      z->parent->color = RBTREE_BLACK;
+      z->parent->parent->color = RBTREE_RED;
+      right_rotate(t, z->parent->parent);
+    }
+    else
+    {
+      node_t *y = z->parent->parent->left;
+
+      if (y->color == RBTREE_RED)
+      {
+        z->parent->color = RBTREE_BLACK;
+        y->color = RBTREE_BLACK;
+        z->parent->parent->color = RBTREE_RED;
+        z = z->parent->parent;
+        continue;
+      }
+
+      if (z == z->parent->left)
+      {
+        z = z->parent;
+        right_rotate(t, z);
+      }
+
+      z->parent->color = RBTREE_BLACK;
+      z->parent->parent->color = RBTREE_RED;
+      left_rotate(t, z->parent->parent);
+    }
+  }
+
+  t->root->color = RBTREE_BLACK;
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key)
