@@ -415,8 +415,27 @@ int rbtree_erase(rbtree *t, node_t *z)
   return 0;
 }
 
+void inorder_traversal(const rbtree *t, node_t *node, key_t *arr, size_t *index, const size_t n)
+{
+  if (node != t->nil && *index < n)
+  {
+    inorder_traversal(t, node->left, arr, index, n);
+
+    if (*index < n)
+    {
+      arr[*index] = node->key;
+      (*index)++;
+    }
+
+    inorder_traversal(t, node->right, arr, index, n);
+  }
+}
+
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
-  // TODO: implement to_array
+  size_t index = 0;
+
+  inorder_traversal(t, t->root, arr, &index, n);
+
   return 0;
 }
