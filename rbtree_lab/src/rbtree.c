@@ -223,7 +223,7 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
     }
   }
 
-  return t->nil;
+  return NULL;
 }
 
 // 후계자 찾는 함수
