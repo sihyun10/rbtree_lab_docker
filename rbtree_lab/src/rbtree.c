@@ -102,50 +102,6 @@ void delete_rbtree(rbtree *t)
   free(t);
 }
 
-node_t *rbtree_insert(rbtree *t, const key_t key)
-{
-  node_t *x = t->root;
-  node_t *y = t->nil;
-
-  node_t *z = (node_t *)calloc(1, sizeof(node_t));
-  z->key = key;
-  z->color = RBTREE_RED;
-  z->left = t->nil;
-  z->right = t->nil;
-  z->parent = t->nil;
-
-  while (x != t->nil)
-  {
-    y = x;
-    if (key < x->key)
-    {
-      x = x->left;
-    }
-    else
-    {
-      x = x->right;
-    }
-  }
-
-  z->parent = y;
-
-  if (y == t->nil)
-  {
-    t->root = z;
-  }
-  else if (key < y->key)
-  {
-    y->left = z;
-  }
-  else
-  {
-    y->right = z;
-  }
-
-  insert_fixup(t, z);
-  return z;
-}
-
 void insert_fixup(rbtree *t, node_t *z)
 {
   while (z->parent->color == RBTREE_RED)
@@ -202,6 +158,50 @@ void insert_fixup(rbtree *t, node_t *z)
   }
 
   t->root->color = RBTREE_BLACK;
+}
+
+node_t *rbtree_insert(rbtree *t, const key_t key)
+{
+  node_t *x = t->root;
+  node_t *y = t->nil;
+
+  node_t *z = (node_t *)calloc(1, sizeof(node_t));
+  z->key = key;
+  z->color = RBTREE_RED;
+  z->left = t->nil;
+  z->right = t->nil;
+  z->parent = t->nil;
+
+  while (x != t->nil)
+  {
+    y = x;
+    if (key < x->key)
+    {
+      x = x->left;
+    }
+    else
+    {
+      x = x->right;
+    }
+  }
+
+  z->parent = y;
+
+  if (y == t->nil)
+  {
+    t->root = z;
+  }
+  else if (key < y->key)
+  {
+    y->left = z;
+  }
+  else
+  {
+    y->right = z;
+  }
+
+  insert_fixup(t, z);
+  return z;
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key)
@@ -291,54 +291,6 @@ void transplant(rbtree *t, node_t *u, node_t *v)
   v->parent = u->parent;
 }
 
-int rbtree_erase(rbtree *t, node_t *z)
-{
-  node_t *y = z;
-  node_t *x;
-  color_t y_original_color = y->color;
-
-  if (z->left == t->nil)
-  {
-    x = z->right;
-    transplant(t, z, z->right);
-  }
-  else if (z->right == t->nil)
-  {
-    x = z->left;
-    transplant(t, z, z->left);
-  }
-  else
-  {
-    y = rbtree_successor(t, z);
-    y_original_color = y->color;
-    x = y->right;
-
-    if (y->parent == z)
-    {
-      x->parent = y;
-    }
-    else
-    {
-      transplant(t, y, y->right);
-      y->right = z->right;
-      y->right->parent = y;
-    }
-
-    transplant(t, z, y);
-    y->left = z->left;
-    y->left->parent = y;
-    y->color = z->color;
-  }
-
-  if (y_original_color == RBTREE_BLACK)
-  {
-    delete_fixup(t, x);
-  }
-
-  free(z);
-  return 0;
-}
-
 void delete_fixup(rbtree *t, node_t *x)
 {
   while (x != t->root && x->color == RBTREE_BLACK)
@@ -413,6 +365,54 @@ void delete_fixup(rbtree *t, node_t *x)
     }
   }
   x->color = RBTREE_BLACK;
+}
+
+int rbtree_erase(rbtree *t, node_t *z)
+{
+  node_t *y = z;
+  node_t *x;
+  color_t y_original_color = y->color;
+
+  if (z->left == t->nil)
+  {
+    x = z->right;
+    transplant(t, z, z->right);
+  }
+  else if (z->right == t->nil)
+  {
+    x = z->left;
+    transplant(t, z, z->left);
+  }
+  else
+  {
+    y = rbtree_successor(t, z);
+    y_original_color = y->color;
+    x = y->right;
+
+    if (y->parent == z)
+    {
+      x->parent = y;
+    }
+    else
+    {
+      transplant(t, y, y->right);
+      y->right = z->right;
+      y->right->parent = y;
+    }
+
+    transplant(t, z, y);
+    y->left = z->left;
+    y->left->parent = y;
+    y->color = z->color;
+  }
+
+  if (y_original_color == RBTREE_BLACK)
+  {
+    delete_fixup(t, x);
+  }
+
+  free(z);
+  return 0;
 }
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
