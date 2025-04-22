@@ -196,16 +196,24 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
   return t->root;
 }
 
-node_t *rbtree_min(const rbtree *t)
+// 후계자 찾는 함수
+node_t *rbtree_min(const rbtree *t, node_t *x)
 {
-  // TODO: implement find
-  return t->root;
+  while (x->left != t->nil)
+  {
+    x = x->left;
+  }
+  return x;
 }
 
-node_t *rbtree_max(const rbtree *t)
+// 전임자 찾는 함수
+node_t *rbtree_max(const rbtree *t, node_t *x)
 {
-  // TODO: implement find
-  return t->root;
+  while (x->right != t->nil)
+  {
+    x = x->right;
+  }
+  return x;
 }
 
 // 두 노드의 자리를 교체
@@ -227,9 +235,47 @@ void transplant(rbtree *t, node_t *u, node_t *v)
   v->parent = u->parent;
 }
 
-int rbtree_erase(rbtree *t, node_t *p)
+int rbtree_erase(rbtree *t, node_t *z)
 {
-  // TODO: implement erase
+  node_t *y = z;
+  node_t *x;
+  color_t y_original_color = y->color;
+
+  if (z->left == t->nil)
+  {
+    x = z->right;
+    transplant(t, z, z->right);
+  }
+  else if (z->right == t->nil)
+  {
+    x = z->left;
+    transplant(t, z, z->left);
+  }
+  else
+  {
+    y = rbtree_min(t, z->right);
+    y_original_color = y->color;
+    x = y->right;
+
+    if (y->parent != z)
+    {
+      transplant(t, y, y->right);
+      y->right = z->right;
+      y->right->parent = y;
+    }
+
+    transplant(t, z, y);
+    y->left = z->left;
+    y->left->parent = y;
+    y->color = z->color;
+  }
+
+  if (y_original_color == RBTREE_BLACK)
+  {
+    delete_fixup(t, x);
+  }
+
+  free(z);
   return 0;
 }
 
