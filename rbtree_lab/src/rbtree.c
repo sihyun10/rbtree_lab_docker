@@ -227,23 +227,49 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
 }
 
 // 후계자 찾는 함수
-node_t *rbtree_min(const rbtree *t, node_t *x)
+node_t *rbtree_successor(const rbtree *t, node_t *z)
 {
-  while (x->left != t->nil)
+  // 오른쪽 서브트리가 있는 경우, 오른쪽 서브트리에서 최솟값을 찾음
+  if (z->right != t->nil)
   {
-    x = x->left;
+    z = z->right;
+    while (z->left != t->nil)
+    {
+      z = z->left;
+    }
+    return z;
   }
-  return x;
+
+  // 오른쪽 서브트리가 없으면, 부모를 따라가며 후계자를 찾음
+  node_t *y = z->parent;
+  while (y != t->nil && z == y->right)
+  {
+    z = y;
+    y = y->parent;
+  }
+  return y;
 }
 
-// 전임자 찾는 함수
-node_t *rbtree_max(const rbtree *t, node_t *x)
+// RB tree 중 최소값을 가진 node pointer 반환
+node_t *rbtree_min(const rbtree *t)
 {
-  while (x->right != t->nil)
+  node_t *current = t->root;
+  while (current->left != t->nil)
   {
-    x = x->right;
+    current = current->left;
   }
-  return x;
+  return current;
+}
+
+// RB tree 중 최대값을 가진 node pointer 반환
+node_t *rbtree_max(const rbtree *t)
+{
+  node_t *current = t->root;
+  while (current->right != t->nil)
+  {
+    current = current->right;
+  }
+  return current;
 }
 
 // 두 노드의 자리를 교체
@@ -283,11 +309,15 @@ int rbtree_erase(rbtree *t, node_t *z)
   }
   else
   {
-    y = rbtree_min(t, z->right);
+    y = rbtree_successor(t, z);
     y_original_color = y->color;
     x = y->right;
 
-    if (y->parent != z)
+    if (y->parent == z)
+    {
+      x->parent = y;
+    }
+    else
     {
       transplant(t, y, y->right);
       y->right = z->right;
