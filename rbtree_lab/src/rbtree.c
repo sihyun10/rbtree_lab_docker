@@ -206,8 +206,24 @@ void insert_fixup(rbtree *t, node_t *z)
 
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
-  // TODO: implement find
-  return t->root;
+  node_t *current = t->root;
+  while (current != t->nil)
+  {
+    if (key == current->key)
+    {
+      return current;
+    }
+    else if (key < current->key)
+    {
+      current = current->left;
+    }
+    else
+    {
+      current = current->right;
+    }
+  }
+
+  return t->nil;
 }
 
 // 후계자 찾는 함수
