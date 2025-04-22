@@ -279,6 +279,82 @@ int rbtree_erase(rbtree *t, node_t *z)
   return 0;
 }
 
+void delete_fixup(rbtree *t, node_t *x)
+{
+  while (x != t->root && x->color == RBTREE_BLACK)
+  {
+    if (x == x->parent->left)
+    {
+      node_t *w = x->parent->right;
+
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        left_rotate(t, x->parent);
+        w = x->parent->right;
+      }
+
+      if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED;
+        x = x->parent;
+      }
+      else
+      {
+        if (w->right->color == RBTREE_BLACK)
+        {
+          w->left->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          right_rotate(t, w);
+          w = x->parent->right;
+        }
+
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->right->color = RBTREE_BLACK;
+        left_rotate(t, x->parent);
+        x = t->root;
+      }
+    }
+    else
+    {
+      node_t *w = x->parent->left;
+
+      if (w->color == RBTREE_RED)
+      {
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        right_rotate(t, x->parent);
+        w = x->parent->left;
+      }
+
+      if (w->right->color == RBTREE_BLACK && w->left->color == RBTREE_BLACK)
+      {
+        w->color = RBTREE_RED;
+        x = x->parent;
+      }
+      else
+      {
+        if (w->left->color == RBTREE_BLACK)
+        {
+          w->right->color = RBTREE_BLACK;
+          w->color = RBTREE_RED;
+          left_rotate(t, w);
+          w = x->parent->left;
+        }
+
+        w->color = x->parent->color;
+        x->parent->color = RBTREE_BLACK;
+        w->left->color = RBTREE_BLACK;
+        right_rotate(t, x->parent);
+        x = t->root;
+      }
+    }
+  }
+  x->color = RBTREE_BLACK;
+}
+
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
   // TODO: implement to_array
